@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Sistema de Eventos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .registro-container {
+            max-width: 600px;
+            margin: 50px auto;
+        }
+        .registro-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .registro-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #0d6efd;
+        }
+        .registro-form .form-control {
+            margin-bottom: 1rem;
+        }
+        .registro-btn {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-top: 1rem;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container registro-container">
+        <div class="registro-card">
+            <h2 class="registro-title">
+                <i class='bx bx-user-plus'></i>
+                Registro de Usuario
+            </h2>
+            <form id="registroForm" class="registro-form">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="nombres" class="form-label">Nombres</label>
+                            <input type="text" class="form-control" id="nombres" name="nombres" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="apellidoP" class="form-label">Apellido Paterno</label>
+                            <input type="text" class="form-control" id="apellidoP" name="apellidoP" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="apellidoM" class="form-label">Apellido Materno</label>
+                            <input type="text" class="form-control" id="apellidoM" name="apellidoM">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="genero" class="form-label">Género</label>
+                            <select class="form-select" id="genero" name="genero" required>
+                                <option value="">Seleccione...</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="fecha_nac" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="fecha_nac" name="fecha_nac" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="nacionalidad" class="form-label">Nacionalidad</label>
+                            <input type="text" class="form-control" id="nacionalidad" name="nacionalidad" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="correo" class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="correo" name="correo" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="contraseña" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="contraseña" name="contraseña" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="confirmar_contraseña" class="form-label">Confirmar Contraseña</label>
+                            <input type="password" class="form-control" id="confirmar_contraseña" name="confirmar_contraseña" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="rol" class="form-label">Tipo de Usuario</label>
+                    <select class="form-select" id="rol" name="rol" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Participante">Participante</option>
+                        <option value="Instructor">Instructor</option>
+                        <script>
+                            // Solo mostrar opción de Responsable si el usuario actual es Responsable
+                            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                            if (currentUser.rol === 'Responsable') {
+                                document.write('<option value="Responsable">Responsable (Admin)</option>');
+                            }
+                        </script>
+                    </select>
+                </div>
+                
+                <!-- Campos específicos para Participante -->
+                <div id="campos-participante" style="display: none;">
+                    <div class="mb-3">
+                        <label for="tipo_participante" class="form-label">Tipo de Participante</label>
+                        <select class="form-select" id="tipo_participante" name="tipo_participante">
+                            <option value="">Seleccione...</option>
+                            <option value="Estudiante">Estudiante</option>
+                            <option value="Profesional">Profesional</option>
+                            <option value="Académico">Académico</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="procedencia" class="form-label">Procedencia</label>
+                        <input type="text" class="form-control" id="procedencia" name="procedencia">
+                    </div>
+                </div>
+
+                <!-- Campos específicos para Instructor -->
+                <div id="campos-instructor" style="display: none;">
+                    <div class="mb-3">
+                        <label for="cv" class="form-label">CV/Biografía</label>
+                        <textarea class="form-control" id="cv" name="cv" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary registro-btn">
+                    <i class='bx bx-user-check'></i>
+                    Registrarse
+                </button>
+                <div class="text-center mt-3">
+                    <a href="login.html" class="text-decoration-none">¿Ya tienes una cuenta? Inicia sesión</a>
+                </div>
+                <div id="errorMessage" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Mostrar/ocultar campos según el rol seleccionado
+        document.getElementById('rol').addEventListener('change', function() {
+            const camposParticipante = document.getElementById('campos-participante');
+            const camposInstructor = document.getElementById('campos-instructor');
+            
+            camposParticipante.style.display = 'none';
+            camposInstructor.style.display = 'none';
+            
+            if (this.value === 'Participante') {
+                camposParticipante.style.display = 'block';
+            } else if (this.value === 'Instructor') {
+                camposInstructor.style.display = 'block';
+            }
+        });
+
+        // Manejar el envío del formulario
+        document.getElementById('registroForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+
+            try {
+                // Validar que las contraseñas coincidan
+                const contraseña = document.getElementById('contraseña').value;
+                const confirmarContraseña = document.getElementById('confirmar_contraseña').value;
+
+                if (contraseña !== confirmarContraseña) {
+                    errorMessage.textContent = 'Las contraseñas no coinciden';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                // Preparar datos según el rol
+                const formData = {
+                    nombres: document.getElementById('nombres').value,
+                    apellidoP: document.getElementById('apellidoP').value,
+                    apellidoM: document.getElementById('apellidoM').value,
+                    género: document.getElementById('genero').value,
+                    fecha_nac: document.getElementById('fecha_nac').value,
+                    nacionalidad: document.getElementById('nacionalidad').value,
+                    correo: document.getElementById('correo').value,
+                    contraseña: contraseña,
+                    rol: document.getElementById('rol').value
+                };
+
+                // Agregar datos específicos según el rol
+                if (formData.rol === 'Participante') {
+                    formData.tipo = document.getElementById('tipo_participante').value;
+                    formData.procedencia = document.getElementById('procedencia').value;
+                } else if (formData.rol === 'Instructor') {
+                    formData.CV = document.getElementById('cv').value;
+                }
+
+                console.log('Enviando datos:', formData); // Para debug
+
+                const response = await axios.post('http://localhost:5001/api/auth/register', formData, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+
+                console.log('Respuesta:', response.data); // Para debug
+
+                if (response.data.status === 'success') {
+                    alert('Registro exitoso. Por favor inicia sesión.');
+                    window.location.href = 'login.html';
+                } else {
+                    throw new Error(response.data.message || 'Error en el registro');
+                }
+            } catch (error) {
+                console.error('Error completo:', error); // Para debug
+                errorMessage.textContent = error.response?.data?.message || error.message || 'Error al registrar usuario';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html> 

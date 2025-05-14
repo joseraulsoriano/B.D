@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Instructor - Sistema de Eventos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .card {
+            transition: transform 0.2s;
+            margin-bottom: 1rem;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .profile-header {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .stats-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .event-card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .cv-section {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sistema de Eventos - Instructor</a>
+            <button class="btn btn-outline-light" onclick="logout()">
+                <i class='bx bx-log-out'></i>
+                Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="profile-header">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2 id="nombre-usuario">Cargando...</h2>
+                    <p class="text-muted" id="correo-usuario"></p>
+                    <div class="cv-section">
+                        <h6>CV/Biografía:</h6>
+                        <p id="cv-instructor">-</p>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-outline-primary" onclick="editarPerfil()">
+                        <i class='bx bx-edit'></i>
+                        Editar Perfil
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card stats-card bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="card-subtitle">Total Eventos Impartidos</h6>
+                        <h2 id="total-eventos">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stats-card bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="card-subtitle">Eventos Activos</h6>
+                        <h2 id="eventos-activos">-</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stats-card bg-info text-white">
+                    <div class="card-body">
+                        <h6 class="card-subtitle">Total Participantes</h6>
+                        <h2 id="total-participantes">-</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Mis Eventos como Instructor</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Evento</th>
+                                        <th>Fecha Inicio</th>
+                                        <th>Fecha Fin</th>
+                                        <th>Modalidad</th>
+                                        <th>Estado</th>
+                                        <th>Participantes</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eventos-table">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edición de Perfil -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Perfil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProfileForm">
+                        <div class="mb-3">
+                            <label class="form-label">CV/Biografía</label>
+                            <textarea class="form-control" id="edit-cv" rows="4"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correo</label>
+                            <input type="email" class="form-control" id="edit-correo">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarCambios()">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        let editProfileModal;
+        
+        // Verificar autenticación
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token || user.rol !== 'Instructor') {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Cargar perfil del instructor
+        async function loadProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://localhost:5001/api/user/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const userData = response.data.data;
+                
+                // Actualizar información del perfil
+                document.getElementById('nombre-usuario').textContent = 
+                    `${userData.nombres} ${userData.apellidoP} ${userData.apellidoM || ''}`;
+                document.getElementById('correo-usuario').textContent = userData.correo;
+                document.getElementById('cv-instructor').textContent = userData.CV || 'No hay CV registrado';
+                
+                // Actualizar estadísticas
+                document.getElementById('total-eventos').textContent = userData.total_eventos_impartidos || '0';
+                
+                // Cargar tabla de eventos
+                if (userData.eventos_impartidos) {
+                    const eventos = await cargarDetallesEventos(userData.eventos_impartidos.split(','));
+                    mostrarEventosEnTabla(eventos);
+                } else {
+                    document.getElementById('eventos-table').innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center">No hay eventos asignados</td>
+                        </tr>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error al cargar perfil:', error);
+                alert('Error al cargar la información del perfil');
+            }
+        }
+
+        async function cargarDetallesEventos(eventosIds) {
+            // Aquí implementarías la lógica para obtener los detalles de cada evento
+            // Por ahora retornamos un array vacío
+            return [];
+        }
+
+        function mostrarEventosEnTabla(eventos) {
+            const tabla = document.getElementById('eventos-table');
+            if (eventos.length === 0) {
+                tabla.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">No hay eventos asignados</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tabla.innerHTML = eventos.map(evento => `
+                <tr>
+                    <td>${evento.titulo}</td>
+                    <td>${formatDate(evento.fecha_inicio)}</td>
+                    <td>${formatDate(evento.fecha_fin)}</td>
+                    <td><span class="badge bg-${evento.modalidad === 'Presencial' ? 'success' : 'primary'}">${evento.modalidad}</span></td>
+                    <td><span class="badge bg-${evento.estado === 'Activo' ? 'success' : 'secondary'}">${evento.estado}</span></td>
+                    <td>${evento.total_participantes || 0}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="verDetalles(${evento.id_evento})">
+                            <i class='bx bx-info-circle'></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editarPerfil() {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('edit-correo').value = document.getElementById('correo-usuario').textContent;
+            document.getElementById('edit-cv').value = document.getElementById('cv-instructor').textContent;
+            
+            editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+            editProfileModal.show();
+        }
+
+        async function guardarCambios() {
+            const token = localStorage.getItem('token');
+            const formData = {
+                correo: document.getElementById('edit-correo').value,
+                CV: document.getElementById('edit-cv').value
+            };
+
+            try {
+                await axios.put('http://localhost:5001/api/user/profile', formData, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                editProfileModal.hide();
+                loadProfile();
+                alert('Perfil actualizado exitosamente');
+            } catch (error) {
+                console.error('Error al actualizar perfil:', error);
+                alert('Error al actualizar el perfil');
+            }
+        }
+
+        function verDetalles(idEvento) {
+            window.location.href = `detalles-evento.html?id=${idEvento}`;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadProfile();
+            }
+        });
+    </script>
+</body>
+</html> 

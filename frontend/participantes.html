@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participantes - Sistema de Eventos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .participant-card {
+            transition: transform 0.2s;
+        }
+        .participant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg" style="background-color: #0d6efd;">
+        <div class="container">
+            <a class="navbar-brand text-white" href="#">Sistema de Eventos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="eventos.html">Eventos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" href="participantes.html">Participantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="estadisticas.html">Estadísticas Generales</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h2>Participantes</h2>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar participante...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class='bx bx-search'></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Total Participantes</h6>
+                    <h3 id="totalParticipantes">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Participantes Activos</h6>
+                    <h3 id="participantesActivos">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Promedio de Eventos</h6>
+                    <h3 id="promedioEventos">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Nuevos este mes</h6>
+                    <h3 id="nuevosParticipantes">-</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Participantes -->
+        <div class="row" id="participantesList">
+            <!-- Los participantes se cargarán aquí dinámicamente -->
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center" id="pagination">
+                <!-- La paginación se generará dinámicamente -->
+            </ul>
+        </nav>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        async function loadParticipantes() {
+            try {
+                const response = await axios.get('http://localhost:5001/api/participantes');
+                const participantes = response.data;
+                
+                const participantesList = document.getElementById('participantesList');
+                participantesList.innerHTML = '';
+
+                participantes.forEach(participante => {
+                    const card = document.createElement('div');
+                    card.className = 'col-md-4 mb-4';
+                    card.innerHTML = `
+                        <div class="card participant-card">
+                            <div class="card-body">
+                                <h5 class="card-title">${participante.nombres} ${participante.apellidoP} ${participante.apellidoM || ''}</h5>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class='bx bx-envelope'></i> ${participante.correo}<br>
+                                        <i class='bx bx-user'></i> ${participante.tipo}<br>
+                                        <i class='bx bx-map'></i> ${participante.procedencia || 'No especificado'}<br>
+                                        <i class='bx bx-calendar'></i> ${participante.eventos_inscritos} eventos
+                                    </small>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-primary">${participante.nacionalidad}</span>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="verDetalles(${participante.id_participante})">
+                                        Ver detalles
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    participantesList.appendChild(card);
+                });
+
+                // Cargar estadísticas
+                const statsResponse = await axios.get('http://localhost:5001/api/dashboard/stats');
+                const stats = statsResponse.data;
+                
+                document.getElementById('totalParticipantes').textContent = stats.total_participantes;
+                // Los otros valores se llenarían con endpoints adicionales que necesitaríamos crear
+                
+            } catch (error) {
+                console.error('Error al cargar participantes:', error);
+                document.getElementById('participantesList').innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger">
+                            Error al cargar los participantes. Por favor, intente nuevamente.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function verDetalles(idParticipante) {
+            // Implementar vista de detalles del participante
+            window.location.href = `detalles-participante.html?id=${idParticipante}`;
+        }
+
+        // Implementar búsqueda
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.participant-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.parentElement.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', loadParticipantes);
+    </script>
+</body>
+</html> 

@@ -1,10 +1,47 @@
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, make_response, request, session
 from flask_cors import CORS
 import mysql.connector
 import os
+import hashlib
+import jwt
+from datetime import datetime, timedelta
+from functools import wraps
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
+        "expose_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True,
+        "max_age": 86400
+    }
+})
+app.config['SECRET_KEY'] = 'tu_clave_secreta_muy_segura'
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Expose-Headers', 'Content-Type,Authorization')
+    return response
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'message': 'Token faltante'}), 401
+        try:
+            token = token.split(' ')[1]  # Remover 'Bearer '
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = data
+        except:
+            return jsonify({'message': 'Token inválido'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
 
 # Configuración de la base de datos
 db_config = {
@@ -415,6 +452,320 @@ def get_estadisticas_tematicas():
         return jsonify({"status": "error", "message": "Error al obtener las estadísticas de temáticas"}), 500
     finally:
         if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    if not data or not data.get('correo') or not data.get('contraseña'):
+        return jsonify({'message': 'Datos incompletos'}), 400
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"status": "error", "message": "Error de conexión a la base de datos"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        # Hash de la contraseña
+        hashed_password = hashlib.sha256(data['contraseña'].encode()).hexdigest()
+        
+        # Consulta principal de usuario
+        cursor.execute("""
+            SELECT 
+                u.id_usuario,
+                u.nombres,
+                u.apellidoP,
+                u.apellidoM,
+                u.rol,
+                u.correo,
+                COALESCE(p.id_participante, NULL) as id_participante,
+                COALESCE(i.id_instructor, NULL) as id_instructor,
+                COALESCE(r.id_responsable, NULL) as id_responsable
+            FROM Usuario u
+            LEFT JOIN Participante p ON u.id_usuario = p.id_usuario
+            LEFT JOIN Instructor i ON u.id_usuario = i.id_usuario
+            LEFT JOIN Responsable r ON u.id_usuario = r.id_usuario
+            WHERE u.correo = %s AND u.contraseña = %s
+        """, (data['correo'], hashed_password))
+        
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({'message': 'Credenciales inválidas'}), 401
+
+        # Generar token JWT
+        token = jwt.encode({
+            'id_usuario': user['id_usuario'],
+            'rol': user['rol'],
+            'exp': datetime.utcnow() + timedelta(hours=24)
+        }, app.config['SECRET_KEY'])
+
+        return jsonify({
+            'token': token,
+            'user': {
+                'id_usuario': user['id_usuario'],
+                'nombre_completo': f"{user['nombres']} {user['apellidoP']} {user['apellidoM'] if user['apellidoM'] else ''}",
+                'rol': user['rol'],
+                'id_rol_especifico': user.get(f"id_{user['rol'].lower()}")
+            }
+        })
+
+    except mysql.connector.Error as err:
+        print(f"Error en login: {err}")
+        return jsonify({"status": "error", "message": "Error al procesar el login"}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/api/user/profile', methods=['GET'])
+@token_required
+def get_user_profile(current_user):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"status": "error", "message": "Error de conexión a la base de datos"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        if current_user['rol'] == 'Participante':
+            cursor.execute("""
+                SELECT 
+                    u.*,
+                    p.tipo as tipo_participante,
+                    p.procedencia,
+                    COUNT(DISTINCT ep.id_evento) as total_eventos_inscritos,
+                    GROUP_CONCAT(DISTINCT e.titulo) as eventos_inscritos
+                FROM Usuario u
+                JOIN Participante p ON u.id_usuario = p.id_usuario
+                LEFT JOIN Evento_Participante ep ON p.id_participante = ep.id_participante
+                LEFT JOIN Evento e ON ep.id_evento = e.id_evento
+                WHERE u.id_usuario = %s
+                GROUP BY u.id_usuario
+            """, (current_user['id_usuario'],))
+            
+        elif current_user['rol'] == 'Instructor':
+            cursor.execute("""
+                SELECT 
+                    u.*,
+                    i.CV,
+                    COUNT(DISTINCT ei.id_evento) as total_eventos_impartidos,
+                    GROUP_CONCAT(DISTINCT e.titulo) as eventos_impartidos
+                FROM Usuario u
+                JOIN Instructor i ON u.id_usuario = i.id_usuario
+                LEFT JOIN Evento_Instructor ei ON i.id_instructor = ei.id_instructor
+                LEFT JOIN Evento e ON ei.id_evento = e.id_evento
+                WHERE u.id_usuario = %s
+                GROUP BY u.id_usuario
+            """, (current_user['id_usuario'],))
+            
+        elif current_user['rol'] == 'Responsable':
+            cursor.execute("""
+                SELECT 
+                    u.*,
+                    r.área,
+                    COUNT(DISTINCT er.id_evento) as total_eventos_responsable,
+                    GROUP_CONCAT(DISTINCT e.titulo) as eventos_responsable
+                FROM Usuario u
+                JOIN Responsable r ON u.id_usuario = r.id_usuario
+                LEFT JOIN Evento_Responsable er ON r.id_responsable = er.id_responsable
+                LEFT JOIN Evento e ON er.id_evento = e.id_evento
+                WHERE u.id_usuario = %s
+                GROUP BY u.id_usuario
+            """, (current_user['id_usuario'],))
+
+        user_data = cursor.fetchone()
+        if not user_data:
+            return jsonify({'message': 'Usuario no encontrado'}), 404
+
+        # Remover contraseña del resultado
+        if 'contraseña' in user_data:
+            del user_data['contraseña']
+
+        return jsonify({
+            "status": "success",
+            "data": user_data
+        })
+
+    except mysql.connector.Error as err:
+        print(f"Error al obtener perfil: {err}")
+        return jsonify({"status": "error", "message": "Error al obtener el perfil"}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"status": "error", "message": "Error de conexión a la base de datos"}), 500
+
+    try:
+        data = request.get_json()
+        cursor = conn.cursor(dictionary=True)
+
+        # Verificar si el correo ya existe
+        cursor.execute("SELECT id_usuario FROM Usuario WHERE correo = %s", (data['correo'],))
+        if cursor.fetchone():
+            return jsonify({"status": "error", "message": "El correo ya está registrado"}), 400
+
+        # Hash de la contraseña
+        hashed_password = hashlib.sha256(data['contraseña'].encode()).hexdigest()
+
+        # Insertar usuario
+        cursor.execute("""
+            INSERT INTO Usuario (nombres, apellidoP, apellidoM, género, fecha_nac, 
+                               nacionalidad, correo, contraseña, rol)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            data['nombres'], data['apellidoP'], data['apellidoM'], data['género'],
+            data['fecha_nac'], data['nacionalidad'], data['correo'], hashed_password,
+            data['rol']
+        ))
+        
+        id_usuario = cursor.lastrowid
+
+        # Insertar datos específicos según el rol
+        if data['rol'] == 'Participante':
+            cursor.execute("""
+                INSERT INTO Participante (tipo, procedencia, id_usuario)
+                VALUES (%s, %s, %s)
+            """, (data['tipo'], data['procedencia'], id_usuario))
+        elif data['rol'] == 'Instructor':
+            cursor.execute("""
+                INSERT INTO Instructor (CV, id_usuario)
+                VALUES (%s, %s)
+            """, (data.get('CV', ''), id_usuario))
+
+        conn.commit()
+        return jsonify({"status": "success", "message": "Usuario registrado exitosamente"})
+
+    except mysql.connector.Error as err:
+        print(f"Error en registro: {err}")
+        conn.rollback()
+        return jsonify({"status": "error", "message": str(err)}), 500
+    except Exception as e:
+        print(f"Error general: {e}")
+        conn.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/api/eventos/<int:id_evento>/estadisticas')
+def get_evento_estadisticas(id_evento):
+    conn = get_db_connection()
+    if not conn:
+        print(f"Error: No se pudo conectar a la base de datos para el evento {id_evento}")
+        return jsonify({"status": "error", "message": "Error de conexión a la base de datos"}), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        # Verificar si el evento existe
+        cursor.execute("SELECT id_evento FROM Evento WHERE id_evento = %s", (id_evento,))
+        if not cursor.fetchone():
+            print(f"Error: El evento {id_evento} no existe")
+            return jsonify({"status": "error", "message": "Evento no encontrado"}), 404
+
+        # Verificar si hay participantes
+        cursor.execute("""
+            SELECT COUNT(*) as total
+            FROM Evento_Participante
+            WHERE id_evento = %s
+        """, (id_evento,))
+        total_participantes = cursor.fetchone()['total']
+        
+        if total_participantes == 0:
+            print(f"Aviso: El evento {id_evento} no tiene participantes")
+            return jsonify({
+                "status": "success",
+                "message": "El evento no tiene participantes registrados",
+                "genero": {'masculino': 0, 'femenino': 0},
+                "nacionalidad": {'nacionales': 0, 'extranjeros': 0},
+                "edad": {'menores_18': 0, 'entre_18_30': 0, 'entre_31_50': 0, 'mayores_50': 0},
+                "procedencia": []
+            })
+        
+        # Estadísticas de género para este evento
+        cursor.execute("""
+            SELECT 
+                COALESCE(ROUND(COUNT(CASE WHEN u.género = 'Masculino' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1), 0) as masculino,
+                COALESCE(ROUND(COUNT(CASE WHEN u.género = 'Femenino' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1), 0) as femenino
+            FROM Evento_Participante ep
+            JOIN Participante p ON ep.id_participante = p.id_participante
+            JOIN Usuario u ON p.id_usuario = u.id_usuario
+            WHERE ep.id_evento = %s
+        """, (id_evento,))
+        genero = cursor.fetchone()
+        print(f"Estadísticas de género para evento {id_evento}:", genero)
+
+        # Estadísticas de nacionalidad
+        cursor.execute("""
+            SELECT 
+                COALESCE(ROUND(COUNT(CASE WHEN u.nacionalidad = 'Mexicana' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1), 0) as nacionales,
+                COALESCE(ROUND(COUNT(CASE WHEN u.nacionalidad != 'Mexicana' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1), 0) as extranjeros
+            FROM Evento_Participante ep
+            JOIN Participante p ON ep.id_participante = p.id_participante
+            JOIN Usuario u ON p.id_usuario = u.id_usuario
+            WHERE ep.id_evento = %s
+        """, (id_evento,))
+        nacionalidad = cursor.fetchone()
+        print(f"Estadísticas de nacionalidad para evento {id_evento}:", nacionalidad)
+
+        # Estadísticas de edad
+        cursor.execute("""
+            SELECT 
+                COALESCE(ROUND(COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, u.fecha_nac, CURDATE()) < 18 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1), 0) as menores_18,
+                COALESCE(ROUND(COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, u.fecha_nac, CURDATE()) BETWEEN 18 AND 30 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1), 0) as entre_18_30,
+                COALESCE(ROUND(COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, u.fecha_nac, CURDATE()) BETWEEN 31 AND 50 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1), 0) as entre_31_50,
+                COALESCE(ROUND(COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, u.fecha_nac, CURDATE()) > 50 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1), 0) as mayores_50
+            FROM Evento_Participante ep
+            JOIN Participante p ON ep.id_participante = p.id_participante
+            JOIN Usuario u ON p.id_usuario = u.id_usuario
+            WHERE ep.id_evento = %s
+        """, (id_evento,))
+        edad = cursor.fetchone()
+        print(f"Estadísticas de edad para evento {id_evento}:", edad)
+
+        # Estadísticas de procedencia
+        cursor.execute("""
+            SELECT 
+                p.procedencia,
+                COUNT(*) as total,
+                COALESCE(ROUND(COUNT(*) * 100.0 / NULLIF((
+                    SELECT COUNT(*) 
+                    FROM Evento_Participante ep2 
+                    WHERE ep2.id_evento = %s
+                ), 0), 1), 0) as porcentaje
+            FROM Evento_Participante ep
+            JOIN Participante p ON ep.id_participante = p.id_participante
+            WHERE ep.id_evento = %s AND p.procedencia IS NOT NULL
+            GROUP BY p.procedencia
+        """, (id_evento, id_evento))
+        procedencia = cursor.fetchall()
+        print(f"Estadísticas de procedencia para evento {id_evento}:", procedencia)
+
+        return jsonify({
+            "status": "success",
+            "genero": genero,
+            "nacionalidad": nacionalidad,
+            "edad": edad,
+            "procedencia": procedencia
+        })
+
+    except mysql.connector.Error as err:
+        print(f"Error MySQL al obtener estadísticas del evento {id_evento}: {err}")
+        return jsonify({"status": "error", "message": f"Error al obtener las estadísticas: {str(err)}"}), 500
+    except Exception as e:
+        print(f"Error general al obtener estadísticas del evento {id_evento}: {e}")
+        return jsonify({"status": "error", "message": f"Error general: {str(e)}"}), 500
+    finally:
+        if conn and conn.is_connected():
             cursor.close()
             conn.close()
 

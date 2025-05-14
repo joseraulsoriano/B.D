@@ -37,6 +37,54 @@
             border: none;
             color: #0d6efd;
         }
+        .nav-link {
+            color: white !important;
+            opacity: 0.8;
+        }
+        .nav-link:hover {
+            opacity: 1;
+        }
+        .nav-link.active {
+            opacity: 1;
+            font-weight: bold;
+        }
+        .stats-card {
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .stats-number {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        .stats-icon {
+            font-size: 2em;
+            opacity: 0.8;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn-estadisticas {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn-estadisticas:hover {
+            background-color: #5a6268;
+            color: white;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -57,6 +105,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="showTab('participantes')">Participantes</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="estadisticas.html">Estadísticas Generales</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -67,54 +118,46 @@
         <div id="dashboard-tab" class="tab-content">
             <div class="row g-3 mb-4">
                 <div class="col-md-3">
-                    <div class="card stats-card bg-primary text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h6 class="card-subtitle mb-2">Total Participantes</h6>
-                                    <h2 id="total-participantes">-</h2>
-                                </div>
-                                <i class='bx bx-user-circle stat-icon'></i>
+                    <div class="stats-card" style="background-color: #0d6efd;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>Total Participantes</h6>
+                                <div class="stats-number" id="totalParticipantes">0</div>
                             </div>
+                            <i class='bx bx-user stats-icon'></i>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card stats-card bg-success text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h6 class="card-subtitle mb-2">Eventos Activos</h6>
-                                    <h2 id="eventos-activos">-</h2>
-                                </div>
-                                <i class='bx bx-calendar-check stat-icon'></i>
+                    <div class="stats-card" style="background-color: #198754;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>Eventos Activos</h6>
+                                <div class="stats-number" id="eventosActivos">0</div>
                             </div>
+                            <i class='bx bx-calendar-check stats-icon'></i>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card stats-card bg-info text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h6 class="card-subtitle mb-2">Instructores</h6>
-                                    <h2 id="total-instructores">-</h2>
-                                </div>
-                                <i class='bx bx-chalkboard stat-icon'></i>
+                    <div class="stats-card" style="background-color: #0dcaf0;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>Instructores</h6>
+                                <div class="stats-number" id="totalInstructores">0</div>
                             </div>
+                            <i class='bx bx-chalkboard stats-icon'></i>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card stats-card bg-warning text-white">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h6 class="card-subtitle mb-2">Organizaciones</h6>
-                                    <h2 id="total-organizaciones">-</h2>
-                                </div>
-                                <i class='bx bx-buildings stat-icon'></i>
+                    <div class="stats-card" style="background-color: #ffc107;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6>Organizaciones</h6>
+                                <div class="stats-number" id="totalOrganizaciones">0</div>
                             </div>
+                            <i class='bx bx-building stats-icon'></i>
                         </div>
                     </div>
                 </div>
@@ -122,38 +165,24 @@
 
             <div class="row mb-4">
                 <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Distribución por Género</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label>Hombres</label>
-                                <div class="progress">
-                                    <div id="porcentaje-hombres" class="progress-bar bg-primary" role="progressbar"></div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label>Mujeres</label>
-                                <div class="progress">
-                                    <div id="porcentaje-mujeres" class="progress-bar bg-danger" role="progressbar"></div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="chart-container">
+                        <h5>Distribución por Género</h5>
+                        <div class="progress-list" id="generoList"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Distribución por Modalidad</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="modalidades-container">
-                                <!-- Se llenará dinámicamente -->
-                            </div>
-                        </div>
+                    <div class="chart-container">
+                        <h5>Distribución por Modalidad</h5>
+                        <div class="progress-list" id="modalidadList"></div>
                     </div>
                 </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="estadisticas.html" class="btn btn-estadisticas">
+                    <i class='bx bx-stats'></i>
+                    Ver Estadísticas Detalladas
+                </a>
             </div>
         </div>
 
@@ -227,6 +256,24 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        // Verificar autenticación y rol
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token || user.rol !== 'Responsable') {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
         function formatDate(dateString) {
             if (!dateString) return '-';
             return new Date(dateString).toLocaleDateString('es-ES', {
@@ -244,6 +291,23 @@
             document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
         }
 
+        function createProgressBar(label, percentage, color) {
+            return `
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>${label}</span>
+                        <span>${percentage}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: ${percentage}%; background-color: ${color};" 
+                             aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         async function loadDashboard() {
             try {
                 const [statsResponse, generoResponse, modalidadesResponse] = await Promise.all([
@@ -254,31 +318,24 @@
 
                 // Actualizar estadísticas
                 const stats = statsResponse.data;
-                document.getElementById('total-participantes').textContent = stats.total_participantes || '0';
-                document.getElementById('eventos-activos').textContent = stats.eventos_activos || '0';
-                document.getElementById('total-instructores').textContent = stats.total_instructores || '0';
-                document.getElementById('total-organizaciones').textContent = stats.total_organizaciones || '0';
+                document.getElementById('totalParticipantes').textContent = stats.total_participantes || '0';
+                document.getElementById('eventosActivos').textContent = stats.eventos_activos || '0';
+                document.getElementById('totalInstructores').textContent = stats.total_instructores || '0';
+                document.getElementById('totalOrganizaciones').textContent = stats.total_organizaciones || '0';
 
                 // Actualizar género
                 const genero = generoResponse.data;
-                document.getElementById('porcentaje-hombres').style.width = `${genero.hombres}%`;
-                document.getElementById('porcentaje-hombres').textContent = `${genero.hombres}%`;
-                document.getElementById('porcentaje-mujeres').style.width = `${genero.mujeres}%`;
-                document.getElementById('porcentaje-mujeres').textContent = `${genero.mujeres}%`;
+                const generoList = document.getElementById('generoList');
+                generoList.innerHTML = 
+                    createProgressBar('Hombres', genero.hombres, '#0d6efd') +
+                    createProgressBar('Mujeres', genero.mujeres, '#dc3545');
 
                 // Actualizar modalidades
                 const modalidades = modalidadesResponse.data;
-                const modalidadesContainer = document.getElementById('modalidades-container');
-                modalidadesContainer.innerHTML = modalidades.map(m => `
-                    <div class="mb-3">
-                        <label>${m.modalidad}</label>
-                        <div class="progress">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: ${m.porcentaje}%">
-                                ${m.porcentaje}%
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
+                const modalidadList = document.getElementById('modalidadList');
+                modalidadList.innerHTML = modalidades.map(m => 
+                    createProgressBar(m.modalidad, m.porcentaje, '#198754')
+                ).join('');
             } catch (error) {
                 console.error('Error al cargar el dashboard:', error);
             }
@@ -371,12 +428,13 @@
             alert('Editar participante ' + id);
         }
 
-        // Cargar datos al iniciar
+        // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
-            loadDashboard();
-            loadEventos();
-            loadParticipantes();
-            showTab('dashboard');
+            if (checkAuth()) {
+                loadDashboard();
+                loadEventos();
+                loadParticipantes();
+            }
         });
     </script>
 </body>

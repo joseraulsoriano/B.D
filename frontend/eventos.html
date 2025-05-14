@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventos - Sistema de Eventos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .event-card {
+            transition: transform 0.2s;
+        }
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .badge-custom {
+            font-size: 0.9em;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg" style="background-color: #0d6efd;">
+        <div class="container">
+            <a class="navbar-brand text-white" href="#">Sistema de Eventos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" href="eventos.html">Eventos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="participantes.html">Participantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="estadisticas.html">Estadísticas Generales</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h2>Eventos</h2>
+            </div>
+            <div class="col-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar evento...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class='bx bx-search'></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Total Eventos</h6>
+                    <h3 id="totalEventos">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Eventos Activos</h6>
+                    <h3 id="eventosActivos">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Promedio Participantes</h6>
+                    <h3 id="promedioParticipantes">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6>Este Mes</h6>
+                    <h3 id="eventosMes">-</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary active" onclick="filtrarEventos('todos')">Todos</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="filtrarEventos('activos')">Activos</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="filtrarEventos('finalizados')">Finalizados</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Eventos -->
+        <div class="row" id="eventosList">
+            <!-- Los eventos se cargarán aquí dinámicamente -->
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center" id="pagination">
+                <!-- La paginación se generará dinámicamente -->
+            </ul>
+        </nav>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        async function loadEventos() {
+            try {
+                const response = await axios.get('http://localhost:5001/api/eventos');
+                const eventos = response.data.data;
+                
+                const eventosList = document.getElementById('eventosList');
+                eventosList.innerHTML = '';
+
+                eventos.forEach(evento => {
+                    const card = document.createElement('div');
+                    card.className = 'col-md-6 mb-4';
+                    card.innerHTML = `
+                        <div class="card event-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title">${evento.titulo}</h5>
+                                    <span class="badge badge-custom bg-${evento.estado === 'Activo' ? 'success' : 'secondary'}">${evento.estado}</span>
+                                </div>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class='bx bx-calendar'></i> ${formatDate(evento.fecha_inicio)} - ${formatDate(evento.fecha_fin)}<br>
+                                        <i class='bx bx-time'></i> ${evento.duracion_horas} horas<br>
+                                        <i class='bx bx-category'></i> ${evento.tematica || 'Sin temática'}<br>
+                                        <i class='bx bx-group'></i> ${evento.total_participantes || 0} participantes
+                                    </small>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-${evento.modalidad === 'Presencial' ? 'success' : evento.modalidad === 'Virtual' ? 'primary' : 'info'}">${evento.modalidad}</span>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="verDetalles(${evento.id_evento})">
+                                        Ver detalles
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    eventosList.appendChild(card);
+                });
+
+                // Cargar estadísticas
+                const statsResponse = await axios.get('http://localhost:5001/api/dashboard/stats');
+                const stats = statsResponse.data;
+                
+                document.getElementById('eventosActivos').textContent = stats.eventos_activos;
+                // Los otros valores se llenarían con endpoints adicionales que necesitaríamos crear
+                
+            } catch (error) {
+                console.error('Error al cargar eventos:', error);
+                document.getElementById('eventosList').innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger">
+                            Error al cargar los eventos. Por favor, intente nuevamente.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function verDetalles(idEvento) {
+            window.location.href = `detalles-evento.html?id=${idEvento}`;
+        }
+
+        function filtrarEventos(filtro) {
+            const cards = document.querySelectorAll('.event-card');
+            cards.forEach(card => {
+                const estado = card.querySelector('.badge').textContent;
+                if (filtro === 'todos') {
+                    card.parentElement.style.display = '';
+                } else if (filtro === 'activos') {
+                    card.parentElement.style.display = estado === 'Activo' ? '' : 'none';
+                } else if (filtro === 'finalizados') {
+                    card.parentElement.style.display = estado !== 'Activo' ? '' : 'none';
+                }
+            });
+        }
+
+        // Implementar búsqueda
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.event-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.parentElement.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', loadEventos);
+    </script>
+</body>
+</html> 

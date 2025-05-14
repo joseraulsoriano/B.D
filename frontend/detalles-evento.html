@@ -6,210 +6,158 @@
     <title>Detalles del Evento - Sistema de Eventos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .card {
-            transition: transform 0.2s;
-            margin-bottom: 1rem;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .stat-icon {
-            font-size: 2.5rem;
-            opacity: 0.8;
-        }
         .stats-card {
+            background: white;
             border-radius: 10px;
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .ods-checkbox {
-            margin-right: 10px;
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-bottom: 15px;
         }
-        .ods-item {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            border-bottom: 1px solid #eee;
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .ods-item:last-child {
-            border-bottom: none;
+        .detail-label {
+            font-weight: bold;
+            color: #6c757d;
+        }
+        .badge-custom {
+            font-size: 0.9em;
+            padding: 8px 12px;
         }
         .financial-info {
             background-color: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .financial-info h6 {
-            color: #6c757d;
-            margin-bottom: 10px;
+            margin: 10px 0;
         }
         .financial-value {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #198754;
         }
     </style>
 </head>
 <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg" style="background-color: #0d6efd;">
         <div class="container">
-            <a class="navbar-brand" href="/">Sistema de Eventos</a>
+            <a class="navbar-brand text-white" href="#">Sistema de Eventos</a>
         </div>
     </nav>
 
-    <div class="container py-4">
-        <div class="row">
-            <div class="col-12 mb-4">
-                <a href="/" class="btn btn-outline-primary mb-3">
-                    <i class='bx bx-arrow-back'></i> Volver al Dashboard
-                </a>
-                <div class="card">
-                    <div class="card-body">
-                        <h2 id="evento-titulo" class="card-title mb-4">Cargando...</h2>
+    <div class="container mt-4">
+        <a href="index.html" class="btn btn-outline-primary mb-4">
+            <i class='bx bx-arrow-back'></i> Volver al Dashboard
+        </a>
+
+        <!-- Detalles del Evento -->
+        <div class="info-card">
+            <h2 id="evento-titulo" class="mb-3">Cargando...</h2>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <table class="table">
+                        <tr>
+                            <td class="detail-label">ID:</td>
+                            <td id="evento-id"></td>
+                        </tr>
+                        <tr>
+                            <td class="detail-label">Modalidad:</td>
+                            <td><span id="evento-modalidad" class="badge"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="detail-label">Estado:</td>
+                            <td><span id="evento-estado" class="badge"></span></td>
+                        </tr>
+                        <tr>
+                            <td class="detail-label">Fecha Inicio:</td>
+                            <td id="evento-fecha-inicio"></td>
+                        </tr>
+                        <tr>
+                            <td class="detail-label">Fecha Fin:</td>
+                            <td id="evento-fecha-fin"></td>
+                        </tr>
+                        <tr>
+                            <td class="detail-label">Duración:</td>
+                            <td><span id="evento-duracion"></span> horas</td>
+                        </tr>
+                        <tr>
+                            <td class="detail-label">Temática:</td>
+                            <td id="evento-tematica"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <div class="financial-info mb-3">
+                        <h6 class="mb-2">Información Financiera</h6>
                         <div class="row">
                             <div class="col-md-6">
-                                <h5>Información General</h5>
-                                <table class="table">
-                                    <tr>
-                                        <th>ID:</th>
-                                        <td id="evento-id"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Modalidad:</th>
-                                        <td id="evento-modalidad"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Estado:</th>
-                                        <td id="evento-estado"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha Inicio:</th>
-                                        <td id="evento-fecha-inicio"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha Fin:</th>
-                                        <td id="evento-fecha-fin"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Duración (horas):</th>
-                                        <td id="evento-duracion"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Temática:</th>
-                                        <td id="evento-tematica"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Descripción:</th>
-                                        <td id="evento-descripcion"></td>
-                                    </tr>
-                                </table>
+                                <small class="text-muted">Aportes Financieros (fee/overhead)</small>
+                                <div class="financial-value" id="fee-aportado">-</div>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-4">
-                                    <h5>Estadísticas</h5>
-                                    <div class="row g-3">
-                                        <div class="col-6">
-                                            <div class="card stats-card bg-primary text-white">
-                                                <div class="card-body">
-                                                    <h6 class="card-subtitle">Total Participantes</h6>
-                                                    <h2 id="total-participantes">-</h2>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="card stats-card bg-success text-white">
-                                                <div class="card-body">
-                                                    <h6 class="card-subtitle">Total Instructores</h6>
-                                                    <h2 id="total-instructores">-</h2>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <h5>Información Financiera</h5>
-                                    <div class="financial-info">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <h6>Aportes Financieros (fee/overhead)</h6>
-                                                <div class="financial-value" id="fee-aportado">-</div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <h6>Porcentaje de Ingresos EC</h6>
-                                                <div class="financial-value" id="porcentaje-ingreso">-</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <h5>Organizaciones Participantes</h5>
-                                    <ul id="lista-organizaciones" class="list-group">
-                                        <!-- Se llenará dinámicamente -->
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h5>Objetivos de Desarrollo Sostenible (ODS)</h5>
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div id="lista-ods">
-                                                <!-- Se llenará dinámicamente -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <small class="text-muted">Porcentaje de Ingresos EC</small>
+                                <div class="financial-value" id="porcentaje-ingreso">-</div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Participantes</h5>
+                    <div class="mb-3">
+                        <h6>Organizaciones Participantes</h6>
+                        <ul id="lista-organizaciones" class="list-group">
+                        </ul>
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Nombre</th>
-                                        <th>Género</th>
-                                        <th>Nacionalidad</th>
-                                        <th>Tipo</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-participantes">
-                                    <!-- Se llenará dinámicamente -->
-                                </tbody>
-                            </table>
+                    <div>
+                        <h6>Objetivos de Desarrollo Sostenible (ODS)</h6>
+                        <div id="lista-ods">
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- Estadísticas -->
+        <div class="row mt-4">
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Instructores</h5>
+                <div class="stats-card">
+                    <h6>Distribución por Género</h6>
+                    <div class="chart-container">
+                        <canvas id="generoChart"></canvas>
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Nombre</th>
-                                        <th>Género</th>
-                                        <th>Nacionalidad</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-instructores">
-                                    <!-- Se llenará dinámicamente -->
-                                </tbody>
-                            </table>
-                        </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <h6>Distribución por Nacionalidad</h6>
+                    <div class="chart-container">
+                        <canvas id="nacionalidadChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <h6>Distribución por Edad</h6>
+                    <div class="chart-container">
+                        <canvas id="edadChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <h6>Distribución por Origen</h6>
+                    <div class="chart-container">
+                        <canvas id="procedenciaChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -219,6 +167,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        const API_BASE_URL = 'http://localhost:5001';
+        let charts = {};
+
         function formatDate(dateString) {
             if (!dateString) return '-';
             return new Date(dateString).toLocaleDateString('es-ES', {
@@ -229,60 +180,153 @@
         }
 
         function formatPercentage(value) {
-            if (value === null || value === undefined) return '-';
-            return value.toFixed(2) + '%';
+            if (value === null || value === undefined || isNaN(value)) return '-';
+            const numValue = parseFloat(value);
+            return isNaN(numValue) ? '-' : numValue.toFixed(2) + '%';
         }
 
-        async function loadEventoDetalle() {
+        function createPieChart(elementId, data, labels) {
+            console.log(`Creating pie chart for ${elementId}:`, { data, labels });
+            const ctx = document.getElementById(elementId).getContext('2d');
+            if (charts[elementId]) {
+                charts[elementId].destroy();
+            }
+            charts[elementId] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createBarChart(elementId, data, labels) {
+            console.log(`Creating bar chart for ${elementId}:`, { data, labels });
+            const ctx = document.getElementById(elementId).getContext('2d');
+            if (charts[elementId]) {
+                charts[elementId].destroy();
+            }
+            charts[elementId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: '#36A2EB'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadEventoDetails() {
             const urlParams = new URLSearchParams(window.location.search);
             const idEvento = urlParams.get('id');
 
             if (!idEvento) {
                 alert('ID de evento no proporcionado');
-                window.location.href = '/';
+                window.location.href = 'index.html';
                 return;
             }
 
             try {
-                const response = await axios.get(`http://localhost:5001/api/eventos/${idEvento}`);
-                const { evento, participantes, instructores, ods_completo } = response.data.data;
+                // Mostrar indicador de carga
+                document.getElementById('evento-titulo').textContent = 'Cargando...';
+                
+                // Cargar detalles del evento
+                const eventoResponse = await axios.get(`${API_BASE_URL}/api/eventos/${idEvento}`);
+                
+                if (!eventoResponse.data || eventoResponse.data.status !== 'success') {
+                    throw new Error('Error al cargar los detalles del evento');
+                }
+                
+                const { evento, participantes, instructores, ods_completo } = eventoResponse.data.data;
 
                 // Información general
-                document.getElementById('evento-titulo').textContent = evento.titulo;
+                document.getElementById('evento-titulo').textContent = evento.titulo || 'Sin título';
                 document.getElementById('evento-id').textContent = evento.id_evento;
-                document.getElementById('evento-modalidad').innerHTML = `<span class="badge bg-${evento.modalidad === 'Presencial' ? 'success' : evento.modalidad === 'Virtual' ? 'primary' : 'info'}">${evento.modalidad}</span>`;
-                document.getElementById('evento-estado').innerHTML = `<span class="badge bg-${evento.estado === 'Activo' ? 'success' : 'secondary'}">${evento.estado}</span>`;
+                document.getElementById('evento-modalidad').textContent = evento.modalidad;
+                document.getElementById('evento-modalidad').className = `badge badge-custom bg-${evento.modalidad === 'Presencial' ? 'success' : evento.modalidad === 'Virtual' ? 'primary' : 'info'}`;
+                document.getElementById('evento-estado').textContent = evento.estado;
+                document.getElementById('evento-estado').className = `badge badge-custom bg-${evento.estado === 'Activo' ? 'success' : 'secondary'}`;
                 document.getElementById('evento-fecha-inicio').textContent = formatDate(evento.fecha_inicio);
                 document.getElementById('evento-fecha-fin').textContent = formatDate(evento.fecha_fin);
                 document.getElementById('evento-duracion').textContent = evento.duracion_horas;
                 document.getElementById('evento-tematica').textContent = evento.tematica_nombre || '-';
-                document.getElementById('evento-descripcion').textContent = evento.descripcion || '-';
 
                 // Información financiera
                 document.getElementById('fee-aportado').textContent = evento.fee_aportado ? formatPercentage(evento.fee_aportado) : 'No especificado';
                 document.getElementById('porcentaje-ingreso').textContent = evento.porcentaje_ingreso ? formatPercentage(evento.porcentaje_ingreso) : 'No especificado';
-
-                // Estadísticas
-                document.getElementById('total-participantes').textContent = evento.total_participantes || '0';
-                document.getElementById('total-instructores').textContent = evento.total_instructores || '0';
 
                 // Organizaciones
                 const listaOrganizaciones = document.getElementById('lista-organizaciones');
                 if (evento.organizaciones) {
                     const organizaciones = evento.organizaciones.split(',');
                     listaOrganizaciones.innerHTML = organizaciones.map(org => 
-                        `<li class="list-group-item">${org.trim()}</li>`
+                        `<li class="list-group-item py-2">${org.trim()}</li>`
                     ).join('');
                 } else {
-                    listaOrganizaciones.innerHTML = '<li class="list-group-item">No hay organizaciones registradas</li>';
+                    listaOrganizaciones.innerHTML = '<li class="list-group-item py-2">No hay organizaciones registradas</li>';
                 }
 
-                // ODS con checkboxes
+                // ODS
                 const listaODS = document.getElementById('lista-ods');
                 if (ods_completo && ods_completo.length > 0) {
                     listaODS.innerHTML = ods_completo.map(ods => `
-                        <div class="ods-item">
-                            <input type="checkbox" class="ods-checkbox form-check-input" 
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" 
                                    id="ods-${ods.id_ods}" 
                                    ${ods.seleccionado ? 'checked' : ''} 
                                    disabled>
@@ -290,47 +334,116 @@
                         </div>
                     `).join('');
                 } else {
-                    listaODS.innerHTML = '<div class="alert alert-info">No hay ODS registrados</div>';
+                    listaODS.innerHTML = '<div class="alert alert-info py-2">No hay ODS registrados</div>';
                 }
 
-                // Participantes
-                const tablaParticipantes = document.getElementById('tabla-participantes');
-                tablaParticipantes.innerHTML = participantes.map(p => `
-                    <tr>
-                        <td>${p.nombres} ${p.apellidoP} ${p.apellidoM || ''}</td>
-                        <td>${p.género}</td>
-                        <td>${p.nacionalidad}</td>
-                        <td>${p.tipo}</td>
-                    </tr>
-                `).join('');
+                // Cargar estadísticas
+                try {
+                    const statsResponse = await axios.get(`${API_BASE_URL}/api/eventos/${idEvento}/estadisticas`);
+                    const stats = statsResponse.data;
+                    console.log('Estadísticas recibidas:', stats);
 
-                // Instructores
-                const tablaInstructores = document.getElementById('tabla-instructores');
-                tablaInstructores.innerHTML = instructores.map(i => `
-                    <tr>
-                        <td>${i.nombres} ${i.apellidoP} ${i.apellidoM || ''}</td>
-                        <td>${i.género}</td>
-                        <td>${i.nacionalidad}</td>
-                        <td>${formatCurrency(i.pagoInstructor)}</td>
-                    </tr>
-                `).join('');
+                    if (stats.status === 'success') {
+                        if (stats.message === "El evento no tiene participantes registrados") {
+                            document.querySelectorAll('.chart-container').forEach(container => {
+                                container.innerHTML = '<div class="alert alert-info">Este evento aún no tiene participantes registrados.</div>';
+                            });
+                            return;
+                        }
+
+                        // Gráfica de género
+                        if (stats.genero) {
+                            console.log('Datos de género:', stats.genero);
+                            const generoData = [
+                                parseFloat(stats.genero.masculino || 0),
+                                parseFloat(stats.genero.femenino || 0)
+                            ];
+                            console.log('Datos procesados de género:', generoData);
+                            if (generoData.some(value => !isNaN(value) && value > 0)) {
+                                createPieChart('generoChart', generoData, ['Masculino', 'Femenino']);
+                            } else {
+                                document.querySelector('#generoChart').parentElement.innerHTML = 
+                                    '<div class="alert alert-info">No hay datos de género disponibles.</div>';
+                            }
+                        }
+
+                        // Gráfica de nacionalidad
+                        if (stats.nacionalidad) {
+                            console.log('Datos de nacionalidad:', stats.nacionalidad);
+                            const nacionalidadData = [
+                                parseFloat(stats.nacionalidad.nacionales || 0),
+                                parseFloat(stats.nacionalidad.extranjeros || 0)
+                            ];
+                            console.log('Datos procesados de nacionalidad:', nacionalidadData);
+                            if (nacionalidadData.some(value => !isNaN(value) && value > 0)) {
+                                createPieChart('nacionalidadChart', nacionalidadData, ['Nacional', 'Extranjero']);
+                            } else {
+                                document.querySelector('#nacionalidadChart').parentElement.innerHTML = 
+                                    '<div class="alert alert-info">No hay datos de nacionalidad disponibles.</div>';
+                            }
+                        }
+
+                        // Gráfica de edad
+                        if (stats.edad) {
+                            console.log('Datos de edad:', stats.edad);
+                            const edadData = [
+                                parseFloat(stats.edad.menores_18 || 0),
+                                parseFloat(stats.edad.entre_18_30 || 0),
+                                parseFloat(stats.edad.entre_31_50 || 0),
+                                parseFloat(stats.edad.mayores_50 || 0)
+                            ];
+                            console.log('Datos procesados de edad:', edadData);
+                            if (edadData.some(value => !isNaN(value) && value > 0)) {
+                                createBarChart('edadChart', edadData, ['<18', '18-30', '31-50', '>50']);
+                            } else {
+                                document.querySelector('#edadChart').parentElement.innerHTML = 
+                                    '<div class="alert alert-info">No hay datos de edad disponibles.</div>';
+                            }
+                        }
+
+                        // Gráfica de procedencia
+                        if (stats.procedencia && stats.procedencia.length > 0) {
+                            console.log('Datos de procedencia:', stats.procedencia);
+                            const procedenciaData = stats.procedencia.map(p => parseFloat(p.porcentaje || 0));
+                            const procedenciaLabels = stats.procedencia.map(p => p.procedencia || 'No especificado');
+                            console.log('Datos procesados de procedencia:', { procedenciaData, procedenciaLabels });
+                            if (procedenciaData.some(value => !isNaN(value) && value > 0)) {
+                                createBarChart('procedenciaChart', procedenciaData, procedenciaLabels);
+                            } else {
+                                document.querySelector('#procedenciaChart').parentElement.innerHTML = 
+                                    '<div class="alert alert-info">No hay datos de procedencia disponibles.</div>';
+                            }
+                        } else {
+                            document.querySelector('#procedenciaChart').parentElement.innerHTML = 
+                                '<div class="alert alert-info">No hay datos de procedencia disponibles.</div>';
+                        }
+                    } else {
+                        console.error('Error al cargar estadísticas:', stats.message);
+                        // Mostrar mensaje de error en las gráficas
+                        document.querySelectorAll('.chart-container').forEach(container => {
+                            container.innerHTML = '<div class="alert alert-danger">Error al cargar estadísticas</div>';
+                        });
+                    }
+                } catch (statsError) {
+                    console.error('Error al cargar estadísticas:', statsError);
+                    document.querySelectorAll('.chart-container').forEach(container => {
+                        container.innerHTML = '<div class="alert alert-danger">Error al cargar las estadísticas</div>';
+                    });
+                }
 
             } catch (error) {
-                console.error('Error al cargar los detalles del evento:', error);
-                alert('Error al cargar los detalles del evento. Por favor, intente nuevamente.');
+                console.error('Error al cargar detalles del evento:', error);
+                document.getElementById('evento-titulo').textContent = 'Error al cargar el evento';
+                // Mostrar mensaje de error general
+                document.querySelector('.container').innerHTML += `
+                    <div class="alert alert-danger mt-3">
+                        Error al cargar los detalles del evento. Por favor, intente nuevamente.
+                    </div>`;
             }
         }
 
-        function formatCurrency(value) {
-            if (!value) return '-';
-            return new Intl.NumberFormat('es-MX', {
-                style: 'currency',
-                currency: 'MXN'
-            }).format(value);
-        }
-
         // Cargar datos al iniciar
-        document.addEventListener('DOMContentLoaded', loadEventoDetalle);
+        document.addEventListener('DOMContentLoaded', loadEventoDetails);
     </script>
 </body>
 </html> 
