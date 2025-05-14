@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Evento - Sistema de Eventos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .card {
+            transition: transform 0.2s;
+            margin-bottom: 1rem;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .stats-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .ods-checkbox {
+            margin-right: 10px;
+        }
+        .ods-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .ods-item:last-child {
+            border-bottom: none;
+        }
+        .financial-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .financial-info h6 {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        .financial-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #198754;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Sistema de Eventos</a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <a href="/" class="btn btn-outline-primary mb-3">
+                    <i class='bx bx-arrow-back'></i> Volver al Dashboard
+                </a>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 id="evento-titulo" class="card-title mb-4">Cargando...</h2>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Información General</h5>
+                                <table class="table">
+                                    <tr>
+                                        <th>ID:</th>
+                                        <td id="evento-id"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Modalidad:</th>
+                                        <td id="evento-modalidad"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Estado:</th>
+                                        <td id="evento-estado"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Fecha Inicio:</th>
+                                        <td id="evento-fecha-inicio"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Fecha Fin:</th>
+                                        <td id="evento-fecha-fin"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Duración (horas):</th>
+                                        <td id="evento-duracion"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Temática:</th>
+                                        <td id="evento-tematica"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Descripción:</th>
+                                        <td id="evento-descripcion"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <h5>Estadísticas</h5>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <div class="card stats-card bg-primary text-white">
+                                                <div class="card-body">
+                                                    <h6 class="card-subtitle">Total Participantes</h6>
+                                                    <h2 id="total-participantes">-</h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="card stats-card bg-success text-white">
+                                                <div class="card-body">
+                                                    <h6 class="card-subtitle">Total Instructores</h6>
+                                                    <h2 id="total-instructores">-</h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <h5>Información Financiera</h5>
+                                    <div class="financial-info">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Aportes Financieros (fee/overhead)</h6>
+                                                <div class="financial-value" id="fee-aportado">-</div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Porcentaje de Ingresos EC</h6>
+                                                <div class="financial-value" id="porcentaje-ingreso">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <h5>Organizaciones Participantes</h5>
+                                    <ul id="lista-organizaciones" class="list-group">
+                                        <!-- Se llenará dinámicamente -->
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5>Objetivos de Desarrollo Sostenible (ODS)</h5>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div id="lista-ods">
+                                                <!-- Se llenará dinámicamente -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Participantes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Género</th>
+                                        <th>Nacionalidad</th>
+                                        <th>Tipo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-participantes">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Instructores</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Género</th>
+                                        <th>Nacionalidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-instructores">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function formatPercentage(value) {
+            if (value === null || value === undefined) return '-';
+            return value.toFixed(2) + '%';
+        }
+
+        async function loadEventoDetalle() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idEvento = urlParams.get('id');
+
+            if (!idEvento) {
+                alert('ID de evento no proporcionado');
+                window.location.href = '/';
+                return;
+            }
+
+            try {
+                const response = await axios.get(`http://localhost:5001/api/eventos/${idEvento}`);
+                const { evento, participantes, instructores, ods_completo } = response.data.data;
+
+                // Información general
+                document.getElementById('evento-titulo').textContent = evento.titulo;
+                document.getElementById('evento-id').textContent = evento.id_evento;
+                document.getElementById('evento-modalidad').innerHTML = `<span class="badge bg-${evento.modalidad === 'Presencial' ? 'success' : evento.modalidad === 'Virtual' ? 'primary' : 'info'}">${evento.modalidad}</span>`;
+                document.getElementById('evento-estado').innerHTML = `<span class="badge bg-${evento.estado === 'Activo' ? 'success' : 'secondary'}">${evento.estado}</span>`;
+                document.getElementById('evento-fecha-inicio').textContent = formatDate(evento.fecha_inicio);
+                document.getElementById('evento-fecha-fin').textContent = formatDate(evento.fecha_fin);
+                document.getElementById('evento-duracion').textContent = evento.duracion_horas;
+                document.getElementById('evento-tematica').textContent = evento.tematica_nombre || '-';
+                document.getElementById('evento-descripcion').textContent = evento.descripcion || '-';
+
+                // Información financiera
+                document.getElementById('fee-aportado').textContent = evento.fee_aportado ? formatPercentage(evento.fee_aportado) : 'No especificado';
+                document.getElementById('porcentaje-ingreso').textContent = evento.porcentaje_ingreso ? formatPercentage(evento.porcentaje_ingreso) : 'No especificado';
+
+                // Estadísticas
+                document.getElementById('total-participantes').textContent = evento.total_participantes || '0';
+                document.getElementById('total-instructores').textContent = evento.total_instructores || '0';
+
+                // Organizaciones
+                const listaOrganizaciones = document.getElementById('lista-organizaciones');
+                if (evento.organizaciones) {
+                    const organizaciones = evento.organizaciones.split(',');
+                    listaOrganizaciones.innerHTML = organizaciones.map(org => 
+                        `<li class="list-group-item">${org.trim()}</li>`
+                    ).join('');
+                } else {
+                    listaOrganizaciones.innerHTML = '<li class="list-group-item">No hay organizaciones registradas</li>';
+                }
+
+                // ODS con checkboxes
+                const listaODS = document.getElementById('lista-ods');
+                if (ods_completo && ods_completo.length > 0) {
+                    listaODS.innerHTML = ods_completo.map(ods => `
+                        <div class="ods-item">
+                            <input type="checkbox" class="ods-checkbox form-check-input" 
+                                   id="ods-${ods.id_ods}" 
+                                   ${ods.seleccionado ? 'checked' : ''} 
+                                   disabled>
+                            <label class="form-check-label" for="ods-${ods.id_ods}">${ods.nombre}</label>
+                        </div>
+                    `).join('');
+                } else {
+                    listaODS.innerHTML = '<div class="alert alert-info">No hay ODS registrados</div>';
+                }
+
+                // Participantes
+                const tablaParticipantes = document.getElementById('tabla-participantes');
+                tablaParticipantes.innerHTML = participantes.map(p => `
+                    <tr>
+                        <td>${p.nombres} ${p.apellidoP} ${p.apellidoM || ''}</td>
+                        <td>${p.género}</td>
+                        <td>${p.nacionalidad}</td>
+                        <td>${p.tipo}</td>
+                    </tr>
+                `).join('');
+
+                // Instructores
+                const tablaInstructores = document.getElementById('tabla-instructores');
+                tablaInstructores.innerHTML = instructores.map(i => `
+                    <tr>
+                        <td>${i.nombres} ${i.apellidoP} ${i.apellidoM || ''}</td>
+                        <td>${i.género}</td>
+                        <td>${i.nacionalidad}</td>
+                        <td>${formatCurrency(i.pagoInstructor)}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error al cargar los detalles del evento:', error);
+                alert('Error al cargar los detalles del evento. Por favor, intente nuevamente.');
+            }
+        }
+
+        function formatCurrency(value) {
+            if (!value) return '-';
+            return new Intl.NumberFormat('es-MX', {
+                style: 'currency',
+                currency: 'MXN'
+            }).format(value);
+        }
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', loadEventoDetalle);
+    </script>
+</body>
+</html> 

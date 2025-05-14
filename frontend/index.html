@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema de Eventos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        .card {
+            transition: transform 0.2s;
+            margin-bottom: 1rem;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.8;
+        }
+        .stats-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .nav-tabs .nav-link.active {
+            border-bottom: 3px solid #0d6efd;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+        }
+        .nav-tabs .nav-link:hover {
+            border: none;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sistema de Eventos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showTab('dashboard')">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showTab('eventos')">Eventos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showTab('participantes')">Participantes</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Dashboard -->
+        <div id="dashboard-tab" class="tab-content">
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card stats-card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-subtitle mb-2">Total Participantes</h6>
+                                    <h2 id="total-participantes">-</h2>
+                                </div>
+                                <i class='bx bx-user-circle stat-icon'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-subtitle mb-2">Eventos Activos</h6>
+                                    <h2 id="eventos-activos">-</h2>
+                                </div>
+                                <i class='bx bx-calendar-check stat-icon'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-subtitle mb-2">Instructores</h6>
+                                    <h2 id="total-instructores">-</h2>
+                                </div>
+                                <i class='bx bx-chalkboard stat-icon'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stats-card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-subtitle mb-2">Organizaciones</h6>
+                                    <h2 id="total-organizaciones">-</h2>
+                                </div>
+                                <i class='bx bx-buildings stat-icon'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Distribución por Género</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label>Hombres</label>
+                                <div class="progress">
+                                    <div id="porcentaje-hombres" class="progress-bar bg-primary" role="progressbar"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>Mujeres</label>
+                                <div class="progress">
+                                    <div id="porcentaje-mujeres" class="progress-bar bg-danger" role="progressbar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Distribución por Modalidad</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="modalidades-container">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Eventos -->
+        <div id="eventos-tab" class="tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Lista de Eventos</h2>
+                <button class="btn btn-primary" onclick="window.location.href='forms.html'">
+                    <i class='bx bx-plus'></i> Nuevo Evento
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Título</th>
+                                    <th>Modalidad</th>
+                                    <th>Fecha Inicio</th>
+                                    <th>Fecha Fin</th>
+                                    <th>Estado</th>
+                                    <th>Duración (horas)</th>
+                                    <th>Temática</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventos-table">
+                                <!-- Se llenará dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Participantes -->
+        <div id="participantes-tab" class="tab-content" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Lista de Participantes</h2>
+                <button class="btn btn-primary">
+                    <i class='bx bx-plus'></i> Nuevo Participante
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Género</th>
+                                    <th>Nacionalidad</th>
+                                    <th>Tipo</th>
+                                    <th>Eventos Inscritos</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participantes-table">
+                                <!-- Se llenará dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.getElementById(tabName + '-tab').style.display = 'block';
+            
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+        }
+
+        async function loadDashboard() {
+            try {
+                const [statsResponse, generoResponse, modalidadesResponse] = await Promise.all([
+                    axios.get('http://localhost:5001/api/dashboard/stats'),
+                    axios.get('http://localhost:5001/api/genero'),
+                    axios.get('http://localhost:5001/api/modalidades')
+                ]);
+
+                // Actualizar estadísticas
+                const stats = statsResponse.data;
+                document.getElementById('total-participantes').textContent = stats.total_participantes || '0';
+                document.getElementById('eventos-activos').textContent = stats.eventos_activos || '0';
+                document.getElementById('total-instructores').textContent = stats.total_instructores || '0';
+                document.getElementById('total-organizaciones').textContent = stats.total_organizaciones || '0';
+
+                // Actualizar género
+                const genero = generoResponse.data;
+                document.getElementById('porcentaje-hombres').style.width = `${genero.hombres}%`;
+                document.getElementById('porcentaje-hombres').textContent = `${genero.hombres}%`;
+                document.getElementById('porcentaje-mujeres').style.width = `${genero.mujeres}%`;
+                document.getElementById('porcentaje-mujeres').textContent = `${genero.mujeres}%`;
+
+                // Actualizar modalidades
+                const modalidades = modalidadesResponse.data;
+                const modalidadesContainer = document.getElementById('modalidades-container');
+                modalidadesContainer.innerHTML = modalidades.map(m => `
+                    <div class="mb-3">
+                        <label>${m.modalidad}</label>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: ${m.porcentaje}%">
+                                ${m.porcentaje}%
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error al cargar el dashboard:', error);
+            }
+        }
+
+        async function loadEventos() {
+            try {
+                const response = await axios.get('http://localhost:5001/api/eventos');
+                const eventos = response.data.data;
+                const eventosTable = document.getElementById('eventos-table');
+                eventosTable.innerHTML = '';
+
+                eventos.forEach(evento => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${evento.id_evento}</td>
+                        <td>${evento.titulo}</td>
+                        <td><span class="badge bg-${evento.modalidad === 'Presencial' ? 'success' : evento.modalidad === 'Virtual' ? 'primary' : 'info'}">${evento.modalidad}</span></td>
+                        <td>${formatDate(evento.fecha_inicio)}</td>
+                        <td>${formatDate(evento.fecha_fin)}</td>
+                        <td><span class="badge bg-${evento.estado === 'Activo' ? 'success' : 'secondary'}">${evento.estado}</span></td>
+                        <td>${evento.duracion_horas}</td>
+                        <td>${evento.tematica || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="verDetalles(${evento.id_evento})">
+                                <i class='bx bx-info-circle'></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editarEvento(${evento.id_evento})">
+                                <i class='bx bx-edit'></i>
+                            </button>
+                        </td>
+                    `;
+                    eventosTable.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error al cargar los eventos:', error);
+                alert('Error al cargar los eventos. Por favor, intente nuevamente.');
+            }
+        }
+
+        async function loadParticipantes() {
+            try {
+                const response = await axios.get('http://localhost:5001/api/participantes');
+                const participantes = response.data;
+                const participantesTable = document.getElementById('participantes-table');
+                participantesTable.innerHTML = '';
+
+                participantes.forEach(participante => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${participante.id_participante}</td>
+                        <td>${participante.nombres} ${participante.apellidoP} ${participante.apellidoM}</td>
+                        <td>${participante.género}</td>
+                        <td>${participante.nacionalidad}</td>
+                        <td>${participante.tipo}</td>
+                        <td>${participante.eventos_inscritos || 0}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="verDetallesParticipante(${participante.id_participante})">
+                                <i class='bx bx-info-circle'></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editarParticipante(${participante.id_participante})">
+                                <i class='bx bx-edit'></i>
+                            </button>
+                        </td>
+                    `;
+                    participantesTable.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error al cargar los participantes:', error);
+                alert('Error al cargar los participantes. Por favor, intente nuevamente.');
+            }
+        }
+
+        function verDetalles(id) {
+            window.location.href = `detalles-evento.html?id=${id}`;
+        }
+
+        function editarEvento(id) {
+            // Implementar edición
+            alert('Editar evento ' + id);
+        }
+
+        function verDetallesParticipante(id) {
+            // Implementar vista de detalles
+            alert('Ver detalles del participante ' + id);
+        }
+
+        function editarParticipante(id) {
+            // Implementar edición
+            alert('Editar participante ' + id);
+        }
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            loadEventos();
+            loadParticipantes();
+            showTab('dashboard');
+        });
+    </script>
+</body>
+</html> 

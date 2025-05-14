@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+      - MYSQL_HOST=mysql_sistema_eventos
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=rootpassword
+      - MYSQL_DATABASE=sistema_eventos
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_sistema_eventos
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=sistema_eventos
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
+  phpmyadmin:
+    image: arm64v8/phpmyadmin
+    container_name: phpmyadmin_sistema_eventos
+    platform: linux/arm64/v8
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=mysql_sistema_eventos
+      - PMA_USER=root
+      - PMA_PASSWORD=rootpassword
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data: 
